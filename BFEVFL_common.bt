@@ -1,0 +1,734 @@
+// ==== Structures =====================================================================================================
+
+typedef struct // Header
+{
+	char signature[8]; // BFEVFL
+	uint version <format=hex, read=VersionRead>;
+	enum <ushort> ByteOrder
+	{
+		BO_LittleEndian = 0xFEFF,
+		BO_BigEndian = 0xFFFE
+	} byteOrder <format=hex>;
+	byte alignment <format=hex>;
+	byte targetOffset;
+    NameOffset32 FileName;
+	ushort flag;
+	ushort blockOffset;
+	uint RelocationTableOffset;
+	uint BFEVFLSize;
+	uint64 Unk;
+	uint64 EVFLSize;
+	uint64 EVFLDictOffset;
+	uint64 TLINSize;
+	uint64 UnkDictOffset;
+	if(EVFLSize){uint64 EVFLOffset;}
+    else{uint64 EVFLOffset <hidden=true>;}
+
+
+	if (RelocationTableOffset)
+	{
+		FSeek(RelocationTableOffset);
+		RELT relocationTable;
+	}
+	if (EVFLDictOffset)
+	{
+		FSeek(EVFLDictOffset);
+		Dict EVFLDict(DT_NONE);
+	}
+	if (UnkDictOffset) //Blank for some reason????
+	{
+		FSeek(UnkDictOffset);
+		Dict UnkDictOffset(DT_NONE);
+	}
+	if (EVFLSize)
+	{
+		FSeek(EVFLOffset);
+		EVFL evfl;
+	}
+    if(TLINSize)
+    {
+        FSeek(blockOffset);
+        TLIN tlin;
+    }
+
+} Header <bgcolor=0xCDFFFF>;
+
+// ---- Structs ----
+
+typedef struct //  EVENTS
+{
+    local int i <hidden=true> = 0;
+    for(i = 0; i < AttributeCount; i++ )
+    {
+        EventAttribute eventAttribute <bgcolor=0xFFCDEF>;
+    }
+}EventAttributes;
+
+typedef struct //  EVENTS
+{
+    local int i <hidden=true> = 0;
+    for(i = 0; i < EventCount; i++ ){
+    Event event <bgcolor=0xFDCDEF>;
+}
+}Events <bgcolor=0xFFDDEF>;
+
+typedef struct //   EVENTSECTIONS
+{
+    local uint m <hidden=true> = 0;
+    for(m = 0; m < EventEntryDataCount; m++ )
+    {
+        EventSection eventSection;
+    }
+}EventSections;
+
+
+typedef struct //  EVENT
+{
+	uint64 UnkOffset;
+	uint64 Unk;	
+	uint64 Unk;	
+	uint length;	
+	uint Unk;	
+
+    local uint pos <hidden=true> = FTell();
+    
+    if(UnkOffset)
+    {
+        FSeek(UnkOffset);
+    
+        struct{
+            local int k <hidden=true> = 0;
+            for(k = 0; k < length; k++ )
+            {
+                ushort value;
+            }
+        }values;
+    }
+
+	FSeek(pos);
+
+}EventSection <bgcolor=0xFDCDEF>;
+
+typedef struct //  EVENT
+{
+	NameOffset EventName;
+    ushort Flag;
+    if(Flag == 1)   {ushort Count;}
+    else            {ushort Unk0;}
+    ushort Unk1;
+    ushort Unk2;
+	uint64 eventDataOffset;	
+	uint64 UnkOffset;	
+    NameOffset flag;
+    local uint pos <hidden=true> = FTell();
+    if(Flag)
+	{
+		FSeek(UnkOffset);
+
+        struct
+        {
+            if(Flag == 1)
+            {
+                local int o <hidden=true> = 0;
+                for(o = 0; o < Count; o++ )
+                {
+                    struct
+                    {
+                    uint value;
+                    uint value;
+                    }values;
+                }
+            }
+        }Something <bgcolor=0xFFFFFF>;
+	}
+
+	if (eventDataOffset)
+	{
+		FSeek(eventDataOffset);
+        EventData eventData;
+	}
+
+	FSeek(pos);
+
+
+}Event <bgcolor=0xFDCDEF>;
+
+typedef struct //  EVENT
+{
+    //  Mystixor's theory
+    ushort flag; // '0x05' for string
+    ushort count;
+    uint unknown1;
+    uint unknown2;
+    uint unknown3;
+    if(flag == 0 || flag == 5)  //  string
+    {
+        NameOffset entryName;
+    }
+    else if(flag == 2)          //  int
+    {
+        int value;
+        uint unknown4;
+    }
+    else if(flag == 3)          //  boolean
+    {
+        uint value <read=boolean, name="boolean value">;
+        uint unknown4;
+    }
+    else if(flag == 4)          //  float
+    {
+        float value;
+        uint unknown4;
+    }
+    else if(flag == 9)          //  unknown
+    {
+        uint unknown4;
+        uint unknown5;
+        if(count == 3)
+        {
+            uint unknown6;
+            uint unknown7;
+        }
+    }
+    else                        //  unknown flag
+    {
+        uint64 value;
+    }
+}EventEntry <bgcolor=0xFDCDEF>;
+
+typedef struct //  EVENT
+{
+    ushort Unk;
+
+    if(Unk == 29)
+    {
+        local uint n <hidden=true> = FTell();
+        FSeek(n + 16);
+    }
+    else if(Unk == 41)
+    {
+        local uint n <hidden=true> = FTell();
+        FSeek(n + 8);
+    }
+
+    ushort EventEntryCount;	
+	uint Unk;
+	uint64 eventEntryNamesOffset;
+    local uint pos <hidden=true> = FTell();
+
+    //   uint64 DataOffset[EventDataCount];
+
+    if (eventEntryNamesOffset && eventEntryNamesOffset < BFEVFLSize)
+    {
+		FSeek(eventEntryNamesOffset);
+		Dict eventEntryNames(DT_NONE);
+        FSeek(pos);
+    }
+
+    EventEntries eventEntries;
+
+	FSeek(pos);
+
+}EventData <bgcolor=0xFDCDEF>;
+
+typedef struct //  EVENTS
+{
+   local uint pos <hidden=true> = FTell();
+
+    local int i <hidden=true> = 0;
+    for(i = 0; i < EventEntryCount; i++ )
+    {
+        uint64 dataOffset;
+    }
+
+    for(i = 0; i < EventEntryCount; i++ )
+    {
+        FSeek(dataOffset[i]);
+        EventEntry eventEntry <bgcolor=0xFFCDEF/*, name=nodes[i].ofskey.name*/>;
+        FSeek(pos + (i+1) * 8);
+    }
+}EventEntries <comment="The \"eventEntry\" structs each have the corresponding name given by \"eventEntryNames\".">;
+
+typedef struct // EFEVL Attributes/Actors
+{
+	NameOffset AttributeName;
+	NameOffset unkName;
+	NameOffset unkName;
+	uint64 DemoNameArrayOffset;
+	uint64 CheckNameArrayOffset;
+	uint64 EventAttributeDataOffset;
+	ushort DemoNameCount;	
+	ushort CheckNameCount;	
+	ushort Unk;	
+	ushort Unk;	
+    local uint posM <hidden=true> = FTell();
+
+
+    if (DemoNameArrayOffset)
+    {
+         FSeek(DemoNameArrayOffset);
+         DemoNameArray demoName;
+    }
+    if (CheckNameArrayOffset)
+    {
+         FSeek(CheckNameArrayOffset);
+         CheckNameArray checkName;
+    }
+    if (EventAttributeDataOffset)
+    {
+        FSeek(EventAttributeDataOffset);
+        EventData eventAttributeData;
+    }
+
+    FSeek(posM);
+
+}EventAttribute;
+
+typedef struct //  DemoNames
+{
+    local int i <hidden=true> = 0;
+    for(i = 0; i < DemoNameCount; i++ ){
+    NameOffset demoName;
+}
+}DemoNameArray;
+
+typedef struct //  CheckNames
+{
+    local int i <hidden=true> = 0;
+    for(i = 0; i < CheckNameCount; i++ ){
+    NameOffset demoName;
+}
+}CheckNameArray;
+
+typedef struct // EFEVL
+{
+    ushort Unk;	
+    ushort EventDataCount;	
+	uint Unk;
+	uint64 UnkDictOffset;
+
+    local uint posM <hidden=true> = FTell();
+
+	if (UnkDictOffset) 
+	{
+		FSeek(UnkDictOffset);
+		Dict UnkDictOffset(DT_NONE);
+        FSeek(posM);
+	}
+
+    uint64 DataOffset[EventDataCount];
+
+    for(i = 0; i < EventDataCount; i++ ){
+        if (DataOffset[i])
+        {
+             FSeek(DataOffset[i]);
+	         EventEntry data;
+             //FSeek(posM + i * 7);     //  What is this supposed to do?
+        }
+    }
+}EventAttributeData;
+
+typedef struct // STRINGS
+{
+    char signature[4]; // "STR "
+    uint unknown[3];
+    uint count;
+    uint unknown;
+    local uint k <hidden=true> = 0;
+    for(k = 0; k < count; k++)
+    {
+        struct
+        {
+            ushort length;
+            string String;
+            FAlign(2);
+        } strings;
+    }
+} Strings;
+
+// ---- Offsets ----
+
+typedef struct // Offset
+{
+	local uint origin <format=hex> = FTell();
+	int value;
+	if (value)
+	{
+		local uint target <format=hex> = origin + value;
+	}
+} Offset <read=OffsetRead>;
+
+typedef struct // NameOffset
+{
+	local uint origin  = FTell(); 
+	uint64 value;
+	if (value)
+	{
+		FSeek(value);
+		ushort nameLength;
+		string name;
+		FAlign(8);
+		FSeek(origin + sizeof(uint64));  //Loop back after getting name offset
+	}
+} NameOffset <read=NameOffsetRead>;
+
+typedef struct // NameOffset32
+{
+	local uint origin <format=hex> = FTell();
+	int value;
+	if (value)
+	{
+		FSeek(value - 2);
+		ushort nameLength;
+		string name;
+		FAlign(4);
+		FSeek(origin + sizeof(uint));
+	}
+} NameOffset32 <read=NameOffset32Read>;
+
+// ---- Dicts ----
+
+typedef struct(DictType type) // Dict
+{
+    char Magic[4];
+	uint numNodes; // First element is root entry.
+	if (type == DT_STRING)
+	{
+		DictNodeName nodes[numNodes + 1] <optimize=false>;
+	}
+	else
+	{
+		DictNode nodes[numNodes + 1] <optimize=false>;
+		local uint pos <hidden=true> = FTell();
+		// Read the entries.
+		local int i <hidden=true>;
+		for (i = 1; i <= numNodes; i++)
+		{
+	
+		}
+		FSeek(pos); // Seek back to prevent struct from ending in front of position.
+	}
+} Dict <fgcolor=0x000099, read=DictRead>;
+
+typedef struct // DictNode
+{
+	uint ref <format=hex>;
+	ushort idxLeft;
+	ushort idxRight;
+	NameOffset ofsKey;
+} DictNode <read=DictNodeRead>;
+
+typedef struct // DictNodeName
+{
+	uint ref <format=hex>;
+	ushort idxLeft;
+	ushort idxRight;
+	NameOffset ofsKey;
+} DictNodeName <read=DictNodeNameRead>;
+
+// ---- Texture References ----
+
+typedef struct // TextureRef
+{
+	NameOffset ofsName;
+	Offset ofsTexture; // FTEX pointer
+} TextureRef <bgcolor=0xBBA1C8, read=TextureRefRead>;
+
+// ----Relocation ----
+
+typedef struct // Relocation Table
+{
+	char relt[4];
+	uint Position; //pos of relocation table
+	int SectionCount;
+	uint padding <fgcolor=0x808080, hidden=true>;     
+
+	RELTSection RLTSection[SectionCount];
+	
+    RELTEntry RLTEntry[RLTSection.entryCount];
+
+} RELT <bgcolor=0xBBA1C8>;
+
+typedef struct // RelocationTableSection
+{
+	union
+	{
+	    uint64 padding <fgcolor=0x808080, hidden=true>;                                                                                                          
+		uint64 Ptr;
+	} Pointer;
+
+    uint position;
+    uint size;
+    int entryIndex;
+    int entryCount;
+		
+	
+    local uint pos <hidden=true> = FTell();
+
+	
+	FSeek(pos);
+
+	
+} RELTSection<bgcolor=0xDFDDEF>;
+
+typedef struct // RelocationTableEntry
+{
+
+    uint position;
+    ushort structCount;
+    ubyte offsetCount;
+    ubyte paddingCount;
+	
+} RELTEntry<bgcolor=0xDFDDEF>;
+
+
+
+
+
+// ---- Animation Curves ----
+
+typedef struct // AnimCurve
+{
+	enum <ushort> AnimCurveFrameType
+	{
+		ACFT_Single,
+		ACFT_Decimal10x5,
+		ACFT_Byte
+	} flgFrameType : 2;
+	enum <ushort> AnimCurveKeyType
+	{
+		ACKT_Single,
+		ACKT_Int16,
+		ACKT_SByte
+	} flgKeyType : 2;
+	enum <ushort> AnimCurveType
+	{
+		ACT_Cubic,
+		ACT_Linear,
+		ACT_BakedFloat,
+		ACT_StepInt = 4,
+		ACT_BakedInt,
+		ACT_StepBool,
+		ACT_BakedBool
+	} flgCurveType : 3;
+	ushort numKey;
+	uint animDataOffset;
+	float startFrame;
+	float endFrame;
+	float scale;
+	union
+	{
+		int value;
+		float value;
+	} offset;
+	if (file.version >= 0x03040000)
+	{
+		float delta;
+	}
+	Offset ofsFrameList;
+	Offset ofsKeyList;
+	local uint pos <hidden=true> = FTell();
+	// Read the frames.
+	FSeek(ofsFrameList.target);
+	switch (flgFrameType)
+	{
+		case ACFT_Single: float frames[numKey]; break;
+		case ACFT_Decimal10x5: ushort frames[numKey]; break; // TODO: Convert to 16-bit fixed point
+		case ACFT_Byte: ubyte frames[numKey]; break;
+	}
+	FAlign(4);
+	// Read the keys.
+	FSeek(ofsKeyList.target);
+	local uint keyElementCount <hidden=true>;
+	switch (flgCurveType)
+	{
+		case ACT_Cubic: keyElementCount = 4; break;
+		case ACT_Linear: keyElementCount = 2; break;
+		default: keyElementCount = 1; break;
+	}
+	keyElementCount *= numKey;
+	switch (flgKeyType)
+	{
+		case ACKT_Single: float data[keyElementCount] <bgcolor=0xC8A1A1, optimize=false>; break;
+		case ACKT_Int16: short data[keyElementCount] <bgcolor=0xC8A1A1, optimize=false>; break;
+		case ACKT_SByte: byte data[keyElementCount] <bgcolor=0xC8A1A1, optimize=false>; break;
+	}
+	FAlign(4);
+	FSeek(pos); // Seek back to header end.	
+} AnimCurve <bgcolor=0xD9AEAE>;
+
+// ---- User Data ----
+
+typedef struct // UserData
+{
+	NameOffset ofsName;
+	ushort count;
+	enum <ubyte> UserDataType
+	{
+		UDT_Int32,
+		UDT_Single,
+		UDT_String,
+		UDT_WString,
+		UDT_Byte
+	} type;
+	ubyte padding <fgcolor=0x808080, hidden=true>;
+	// Read the values.
+	switch (type)
+	{
+		case UDT_Int32: int value[count] <optimize=false>; break;
+		case UDT_Single: float value[count] <optimize=false>; break;
+		case UDT_String: NameOffset value[count] <optimize=false>; break;
+		case UDT_Byte: ubyte value[count] <optimize=false>; break;
+	}
+} UserData <fgcolor=0x009900, read=UserDataRead>;
+
+// ---- Shader Parameter Types ----
+
+enum <uint> TexSrtMode
+{
+	TSM_Maya,
+	TSM_3dsMax,
+	TSM_Softimage
+};
+
+typedef struct // Srt2D
+{
+	Vector2F scaling;
+	float rotation;
+	Vector2F translation;
+} Srt2D;
+
+typedef struct // Srt3D
+{
+	Vector3F scaling;
+	Vector3F rotation;
+	Vector3F translation;
+} Srt3D;
+
+typedef struct // TexSrt
+{
+	TexSrtMode mode;
+	Vector2F scaling;
+	float rotation;
+	Vector2F translation;
+} TexSrt;
+
+typedef struct // TexSrtEx
+{
+	TexSrtMode mode;
+	Vector2F scaling;
+	float rotation;
+	Vector2F translation;
+	uint matrixPointer;
+} TexSrtEx;
+
+// ==== Template Methods ===============================================================================================
+
+string boolean(uint &bool)
+{
+    string s;
+    if(bool != 0)   {SPrintf(s, "%d = \"true\"", bool);}
+    else            {SPrintf(s, "%d = \"false\"", bool);}
+    return s;
+}
+
+string DictRead(Dict &dict)
+{
+	string s;
+	SPrintf(s, "%d nodes", dict.numNodes);
+	return s;
+}
+
+string DictNodeNameRead(DictNodeName &dictNodeName)
+{
+	if (dictNodeName.ofsKey.value)
+	{
+		string s;
+		SPrintf(s, "<\"%s\"> = \"%s\"", dictNodeName.ofsKey.name, dictNodeName.ofsData.name);
+		return s;
+	}
+	else
+	{
+		return "<root>";
+	}
+}
+
+string DictNodeRead(DictNode &dictNode)
+{
+	if (dictNode.ofsKey.value)
+	{
+		string s;
+		SPrintf(s, "<\"%s\">", dictNode.ofsKey.name);
+		return s;
+	}
+	else
+	{
+		return "<root>";
+	}
+}
+
+string NameOffsetRead(NameOffset &nameOffset)
+{
+	string s;
+	if (nameOffset.value)
+	{
+		SPrintf(s, "%d -> %Xh = \"%s\"", nameOffset.value, nameOffset.value, nameOffset.name);
+	}
+	else
+	{
+		SPrintf(s, "%d -> N/A", nameOffset.value);
+	}
+	return s;
+}
+
+string NameOffset32Read(NameOffset32 &nameOffset)
+{
+	string s;
+	if (nameOffset.value)
+	{
+		SPrintf(s, "%d -> %Xh = \"%s\"", nameOffset.value, nameOffset.value, nameOffset.name);
+	}
+	else
+	{
+		SPrintf(s, "%d -> N/A", nameOffset.value);
+	}
+	return s;
+}
+
+string OffsetRead(Offset &offset)
+{
+	string s;
+	if (offset.value)
+	{
+		SPrintf(s, "%d -> %Xh", offset.value, offset.target);
+	}
+	else
+	{
+		SPrintf(s, "%d -> N/A", offset.value);
+	}
+	return s;
+}
+
+string TextureRefRead(TextureRef &textureRef)
+{
+	return textureRef.ofsName.name;
+}
+
+string UserDataRead(UserData &userData)
+{
+	// TODO: Show the values.
+	return userData.ofsName.name;
+}
+
+string VersionRead(uint version)
+{
+	string s;
+	SPrintf(s, "%Xh (%u.%u.%u.%u)", version,
+		version >> 24,
+		version >> 16 & 0xFF,
+		version >> 8 & 0xFF,
+		version & 0xFF);
+	return s;
+}
+
+

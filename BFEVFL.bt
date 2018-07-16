@@ -1,0 +1,48 @@
+//------------------------------------------------
+//--- 010 Editor v8.0 Binary Template
+//
+//      File: BFEVFL.bt
+//   Authors: Mystixor, KillzXGaming and Syroot for base
+//   Version: 1.1.0
+//  Category: Wii U/Switch
+// File Mask: *.BFEVFL
+//  ID Bytes: 42 46 45 56 46 4C //BFEVFL
+//------------------------------------------------
+
+// ==== Forward Declarations ===========================================================================================
+
+// ---- Common ----
+
+struct Header;
+struct Offset; struct NameOffset; struct NameOffset32;
+struct Dict; struct DictNode; struct DictNodeName;
+enum DictType
+{
+	DT_NONE,
+    DT_STRING,
+};
+struct UserData;
+struct RELT; struct RELTSection; struct RELTEntry;
+
+// ---- Section Specific ----
+
+struct EVFL; struct EventAttribute; struct EventAttributes; struct EventAttributeData;
+struct DemoNameArray; struct CheckNameArray;
+struct Events; struct Event; struct EventData;
+struct EventSection; struct EventSections; struct EventEntry; struct EventEntries;
+
+struct TLIN; struct SomeStruct1; struct SomeStruct3; struct SomeStruct4; struct Strings;
+
+// ==== Includes =======================================================================================================
+
+#include "math.bt"
+#include "BFEVFL_common.bt"
+#include "BFEVFL_EVFL.bt"
+#include "BFEVFL_TLIN.bt"
+
+
+// ==== File Contents ==================================================================================================
+
+LittleEndian();
+BitfieldRightToLeft();
+Header file <open=true>;

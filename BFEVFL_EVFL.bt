@@ -1,0 +1,58 @@
+
+// ==== Structures =====================================================================================================
+
+typedef struct // EVFL
+{
+	char signature[4]; // EVFL
+    uint64 StringArrayOffset;
+    ushort unk;
+    ushort unk;
+    ushort AttributeCount;
+    ushort unk;
+    ushort unk;
+    ushort EventCount; 
+	ushort EventEntryDataCount;
+    ushort unk;
+    ushort unk;
+    ushort unk;
+    NameOffset nameOffset;
+	uint64 EventAttributeOffset;
+	uint64 EventArrayOffset;
+	uint64 EventDictOffset;
+	uint64 EventEntryDataOffset;
+
+    local uint posM <hidden=true> = FTell();
+
+	if (EventDictOffset)
+	{
+		FSeek(EventDictOffset);
+		Dict EventEntrykDict(DT_NONE);
+	}
+
+	if (AttributeCount)
+	{
+		FSeek(EventAttributeOffset);
+		EventAttributes eventAttributes;
+	}
+
+	if (EventCount)
+	{
+		FSeek(EventArrayOffset);
+        Events events;
+	}
+
+	if (EventEntryDataCount)
+	{
+		FSeek(EventEntryDataOffset);
+        EventSections eventSections;
+	}
+
+    if(StringArrayOffset)
+    {
+        FSeek(blockOffset + StringArrayOffset);
+        Strings strings;
+    }
+
+    FSeek(posM);
+
+} EVFL <bgcolor=0xCDE6FF>;

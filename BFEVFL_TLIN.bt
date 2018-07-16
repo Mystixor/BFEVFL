@@ -1,0 +1,123 @@
+
+// ==== Structures =====================================================================================================
+
+typedef struct // TLIN
+{
+	char signature[4]; // TLIN
+    uint64 StringArrayOffset;
+    if(StringArrayOffset)
+    {
+        FSeek(blockOffset + StringArrayOffset);
+        Strings strings;
+        FSeek(blockOffset + 12);
+    }
+	ushort unk;
+    ushort unk;
+    ushort unk;
+    ushort unk;
+    ushort AttributeCount;
+    ushort EventCount; 
+	ushort SomeCount3;
+    ushort unk;
+    ushort unk;
+    ushort unk;
+    NameOffset nameOffset;
+	uint64 EventAttributeOffset;
+	uint64 SomeOffset3;
+	uint64 SomeOffset5;
+	uint64 SomeOffset4;
+    uint64 SubFileNameOffset;
+    uint64 SomeOffset1;
+    uint64 EventDataOffset;
+
+    local uint posM <hidden=true> = FTell();
+
+	if (SomeOffset5)
+	{
+		FSeek(SomeOffset5);
+		Dict EventEntrykDict(DT_NONE);
+	}
+
+	if (AttributeCount)
+	{
+		FSeek(EventAttributeOffset);
+		EventAttributes eventAttributes;
+	}
+
+	if (SomeCount3)
+	{
+		FSeek(SomeOffset3);
+        SomeStruct3 someStruct;
+	}
+
+	if (SomeOffset4)
+	{
+		FSeek(SomeOffset4);
+        SomeStruct4 someStruct;
+	}
+
+    if (SubFileNameOffset)
+    {
+        FSeek(SubFileNameOffset);
+        NameOffset SubFile;
+    }
+
+    if (SomeOffset1)
+    {
+        FSeek(SomeOffset1);
+        SomeStruct1 someStruct;
+    }
+
+    if (EventDataOffset)
+    {
+        FSeek(EventDataOffset);
+        EventData main;
+    }
+
+    FSeek(posM);
+
+typedef struct
+{
+    uint64 unknown;
+    NameOffset nameOffset;
+    uint64 unknown;
+} SomeStruct1;
+
+typedef struct
+{
+    local uint i <hidden=true> = 0;
+    for(i = 0; i < SomeCount3; i++)
+    {
+        struct
+        {
+            float unknown;
+            float unknown;
+            uint64 unknown;
+            uint64 SomeOffset;
+            local uint pos <hidden=true> = FTell();
+            if(SomeOffset)
+            {
+                FSeek(SomeOffset);
+                EventData eventData;
+            }
+            FSeek(pos);
+        }unknown;
+    }
+} SomeStruct3;
+
+typedef struct
+{
+    local uint j <hidden=true> = 0;
+    for(j = 0; j < SomeCount3; j++)
+    {
+        struct
+        {
+            ushort unknown;
+            ushort unknown;
+            ushort unknown;
+            ushort unknown;
+        } unknown;
+    }
+} SomeStruct4;
+
+} TLIN <bgcolor=0xCDE6FF>;
