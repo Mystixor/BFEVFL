@@ -11,15 +11,15 @@ typedef struct // EVFL
     ushort unk;
     ushort unk;
     ushort EventCount; 
-	ushort EventEntryDataCount;
+	ushort EventSectionCount;
     ushort unk;
     ushort unk;
     ushort unk;
     NameOffset nameOffset;
-	uint64 EventAttributeOffset;
+	uint64 AttributeOffset;
 	uint64 EventArrayOffset;
 	uint64 EventDictOffset;
-	uint64 EventEntryDataOffset;
+	uint64 EventSectionOffset;
 
     local uint posM <hidden=true> = FTell();
 
@@ -31,8 +31,8 @@ typedef struct // EVFL
 
 	if (AttributeCount)
 	{
-		FSeek(EventAttributeOffset);
-		EventAttributes eventAttributes;
+		FSeek(AttributeOffset);
+        struct{Attribute attribute[AttributeCount] <optimize=false>;}Attributes <bgcolor=0xFFFFFF>;
 	}
 
 	if (EventCount)
@@ -41,9 +41,9 @@ typedef struct // EVFL
         Events events;
 	}
 
-	if (EventEntryDataCount)
+	if (EventSectionCount)
 	{
-		FSeek(EventEntryDataOffset);
+		FSeek(EventSectionOffset);
         EventSections eventSections;
 	}
 

@@ -3,7 +3,8 @@
 typedef struct // Header
 {
 	char signature[8]; // BFEVFL
-	uint version <format=hex, read=VersionRead>;
+	uint16 version <format=hex, read=VersionRead>;
+    ushort unknown;
 	enum <ushort> ByteOrder
 	{
 		BO_LittleEndian = 0xFEFF,
@@ -16,53 +17,57 @@ typedef struct // Header
 	ushort blockOffset;
 	uint RelocationTableOffset;
 	uint BFEVFLSize;
-	uint64 Unk;
-	uint64 EVFLSize;
+	ushort EVFLCount;
+	ushort TLINCount;
+	uint unknown;
+	uint64 EVFLOffsetOffset; // why Nintendo, why
 	uint64 EVFLDictOffset;
-	uint64 TLINSize;
+	uint64 TLINOffsetOffset; // why Nintendo, why
 	uint64 UnkDictOffset;
-	if(EVFLSize){uint64 EVFLOffset;}
-    else{uint64 EVFLOffset <hidden=true>;}
 
-
+    if(EVFLOffsetOffset)
+    {
+        local uint pos <hidden=true> = FTell();
+        FSeek(EVFLOffsetOffset);
+        uint64 EVFLOffset;
+        FSeek(pos);
+    }
+    if (EVFLDictOffset)
+	{
+		FSeek(EVFLDictOffset);
+		Dict EVFLDict(DT_NONE);
+	}
+    if(TLINOffsetOffset)
+    {
+        local uint pos <hidden=true> = FTell();
+        FSeek(TLINOffsetOffset);
+        uint64 TLINOffset;
+        FSeek(pos);
+    }
+	if (UnkDictOffset) //Blank for some reason????
+	{
+		FSeek(UnkDictOffset);
+		Dict UnkDict(DT_NONE);
+	}
+	if (EVFLOffsetOffset)
+	{
+        FSeek(EVFLOffset);
+		EVFL eventFlow;
+	}
+    if(TLINOffsetOffset)
+    {
+        FSeek(TLINOffset);
+        TLIN timeLine;
+    }
 	if (RelocationTableOffset)
 	{
 		FSeek(RelocationTableOffset);
 		RELT relocationTable;
 	}
-	if (EVFLDictOffset)
-	{
-		FSeek(EVFLDictOffset);
-		Dict EVFLDict(DT_NONE);
-	}
-	if (UnkDictOffset) //Blank for some reason????
-	{
-		FSeek(UnkDictOffset);
-		Dict UnkDictOffset(DT_NONE);
-	}
-	if (EVFLSize)
-	{
-		FSeek(EVFLOffset);
-		EVFL evfl;
-	}
-    if(TLINSize)
-    {
-        FSeek(blockOffset);
-        TLIN tlin;
-    }
 
 } Header <bgcolor=0xCDFFFF>;
 
 // ---- Structs ----
-
-typedef struct //  EVENTS
-{
-    local int i <hidden=true> = 0;
-    for(i = 0; i < AttributeCount; i++ )
-    {
-        EventAttribute eventAttribute <bgcolor=0xFFCDEF>;
-    }
-}EventAttributes;
 
 typedef struct //  EVENTS
 {
@@ -75,7 +80,7 @@ typedef struct //  EVENTS
 typedef struct //   EVENTSECTIONS
 {
     local uint m <hidden=true> = 0;
-    for(m = 0; m < EventEntryDataCount; m++ )
+    for(m = 0; m < EventSectionCount; m++ )
     {
         EventSection eventSection;
     }
@@ -161,40 +166,46 @@ typedef struct //  EVENT
     uint unknown1;
     uint unknown2;
     uint unknown3;
-    if(flag == 0 || flag == 5)  //  string
+
+    local uint p <hidden=true> = 0;
+    for(p = 0; p < count; p++)
     {
-        NameOffset entryName;
-    }
-    else if(flag == 2)          //  int
-    {
-        int value;
-        uint unknown4;
-    }
-    else if(flag == 3)          //  boolean
-    {
-        uint value <read=boolean, name="boolean value">;
-        uint unknown4;
-    }
-    else if(flag == 4)          //  float
-    {
-        float value;
-        uint unknown4;
-    }
-    else if(flag == 9)          //  unknown
-    {
-        uint unknown4;
-        uint unknown5;
-        if(count == 3)
+        if(flag == 0 || flag == 5)      //  string
         {
-            uint unknown6;
-            uint unknown7;
+            local uint pos <hidden=true> = FTell();                         //
+            uint64 entryNameOffset <hidden=true>;                           //
+            FSeek(entryNameOffset);                                         //  Completely unnecessary, only
+            ushort entryNameLength <hidden=true>;                           //  used to properly align
+            FSeek(entryNameOffset + entryNameLength + sizeof(ushort) + 1);  //  to 8, for highlighting.
+            FAlign(8);                                                      //
+            FSeek(pos);                                                     //
+
+
+            NameOffset entryName;                                           //  The only important thing.
+        }
+        else if(flag == 2)              //  int
+        {
+            int value;
+        }
+        else if(flag == 3)              //  boolean
+        {
+            uint value <read=boolean, name="boolean value">;
+        }
+        else if(flag == 4 || flag == 9) //  float
+        {
+            float value;
+        }
+        else                            //  unknown flag
+        {
+            uint value;
         }
     }
-    else                        //  unknown flag
-    {
-        uint64 value;
-    }
-}EventEntry <bgcolor=0xFDCDEF>;
+
+    if(flag != 0 && flag != 5){uint unknown4;}
+    
+    FAlign(8);
+    
+}EventEntry <bgcolor=0xFDCDEF, fgcolor=0xCCEECC>;
 
 typedef struct //  EVENT
 {
@@ -229,17 +240,15 @@ typedef struct //  EVENT
 
 	FSeek(pos);
 
-}EventData <bgcolor=0xFDCDEF>;
+}EventData <bgcolor=0xFD8DEF, fgcolor=0xFFFFFF>;
 
 typedef struct //  EVENTS
 {
    local uint pos <hidden=true> = FTell();
 
     local int i <hidden=true> = 0;
-    for(i = 0; i < EventEntryCount; i++ )
-    {
-        uint64 dataOffset;
-    }
+
+    uint64 dataOffset[EventEntryCount];
 
     for(i = 0; i < EventEntryCount; i++ )
     {
@@ -247,7 +256,7 @@ typedef struct //  EVENTS
         EventEntry eventEntry <bgcolor=0xFFCDEF/*, name=nodes[i].ofskey.name*/>;
         FSeek(pos + (i+1) * 8);
     }
-}EventEntries <comment="The \"eventEntry\" structs each have the corresponding name given by \"eventEntryNames\".">;
+}EventEntries <bgcolor=0xFDCDEF, fgcolor=0xDDDDDD, comment="The \"eventEntry\" structs each have the corresponding name given by \"eventEntryNames\".">;
 
 typedef struct // EFEVL Attributes/Actors
 {
@@ -256,7 +265,7 @@ typedef struct // EFEVL Attributes/Actors
 	NameOffset unkName;
 	uint64 DemoNameArrayOffset;
 	uint64 CheckNameArrayOffset;
-	uint64 EventAttributeDataOffset;
+	uint64 AttributeDataOffset;
 	ushort DemoNameCount;	
 	ushort CheckNameCount;	
 	ushort Unk;	
@@ -274,15 +283,15 @@ typedef struct // EFEVL Attributes/Actors
          FSeek(CheckNameArrayOffset);
          CheckNameArray checkName;
     }
-    if (EventAttributeDataOffset)
+    if (AttributeDataOffset)
     {
-        FSeek(EventAttributeDataOffset);
-        EventData eventAttributeData;
+        FSeek(AttributeDataOffset);
+        EventData attributeData;
     }
 
     FSeek(posM);
 
-}EventAttribute;
+}Attribute;
 
 typedef struct //  DemoNames
 {
@@ -326,7 +335,7 @@ typedef struct // EFEVL
              //FSeek(posM + i * 7);     //  What is this supposed to do?
         }
     }
-}EventAttributeData;
+}AttributeData;
 
 typedef struct // STRINGS
 {
@@ -344,7 +353,8 @@ typedef struct // STRINGS
             FAlign(2);
         } strings;
     }
-} Strings;
+    FAlign(8);
+} Strings <bgcolor=0xDDFFDD>;
 
 // ---- Offsets ----
 
@@ -366,8 +376,8 @@ typedef struct // NameOffset
 	{
 		FSeek(value);
 		ushort nameLength;
-		string name;
-		FAlign(8);
+		string name <fgcolor=0x55DDAA>;
+		FAlign(4);
 		FSeek(origin + sizeof(uint64));  //Loop back after getting name offset
 	}
 } NameOffset <read=NameOffsetRead>;
@@ -408,7 +418,7 @@ typedef struct(DictType type) // Dict
 		}
 		FSeek(pos); // Seek back to prevent struct from ending in front of position.
 	}
-} Dict <fgcolor=0x000099, read=DictRead>;
+} Dict <fgcolor=0x000099, bgcolor=0xFDCDEF, read=DictRead>;
 
 typedef struct // DictNode
 {
@@ -443,7 +453,7 @@ typedef struct // Relocation Table
 	int SectionCount;
 	uint padding <fgcolor=0x808080, hidden=true>;     
 
-	RELTSection RLTSection[SectionCount];
+	RELTSection RLTSection[SectionCount] <optimize=true>;
 	
     RELTEntry RLTEntry[RLTSection.entryCount];
 
@@ -723,9 +733,9 @@ string UserDataRead(UserData &userData)
 string VersionRead(uint version)
 {
 	string s;
-	SPrintf(s, "%Xh (%u.%u.%u.%u)", version,
-		version >> 24,
-		version >> 16 & 0xFF,
+	SPrintf(s, "%Xh (%u.%u)", version,
+		/*version >> 24,
+		version >> 16 & 0xFF,*/     // only for 4 byte versions
 		version >> 8 & 0xFF,
 		version & 0xFF);
 	return s;

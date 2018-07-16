@@ -3,7 +3,7 @@
 //
 //      File: BFEVFL.bt
 //   Authors: Mystixor, KillzXGaming and Syroot for base
-//   Version: 1.1.0
+//   Version: 1.2.0
 //  Category: Wii U/Switch
 // File Mask: *.BFEVFL
 //  ID Bytes: 42 46 45 56 46 4C //BFEVFL
@@ -26,7 +26,7 @@ struct RELT; struct RELTSection; struct RELTEntry;
 
 // ---- Section Specific ----
 
-struct EVFL; struct EventAttribute; struct EventAttributes; struct EventAttributeData;
+struct EVFL; struct Attribute; struct AttributeData;
 struct DemoNameArray; struct CheckNameArray;
 struct Events; struct Event; struct EventData;
 struct EventSection; struct EventSections; struct EventEntry; struct EventEntries;
