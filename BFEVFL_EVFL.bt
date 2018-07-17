@@ -5,21 +5,27 @@ typedef struct // EVFL
 {
 	char signature[4]; // EVFL
     uint64 StringArrayOffset;
+    if(StringArrayOffset)
+    {
+        FSeek(blockOffset + StringArrayOffset);
+        Strings strings;
+        FSeek(blockOffset + 12);
+    }
     ushort unk;
     ushort unk;
-    ushort AttributeCount;
+    ushort ActorCount;
     ushort unk;
     ushort unk;
     ushort EventCount; 
-	ushort EventSectionCount;
+	ushort EventInfoCount;
     ushort unk;
     ushort unk;
     ushort unk;
     NameOffset nameOffset;
-	uint64 AttributeOffset;
+	uint64 ActorArrayOffset;
 	uint64 EventArrayOffset;
 	uint64 EventDictOffset;
-	uint64 EventSectionOffset;
+	uint64 EventInfoOffset;
 
     local uint posM <hidden=true> = FTell();
 
@@ -29,10 +35,10 @@ typedef struct // EVFL
 		Dict EventEntrykDict(DT_NONE);
 	}
 
-	if (AttributeCount)
+	if (ActorCount)
 	{
-		FSeek(AttributeOffset);
-        struct{Attribute attribute[AttributeCount] <optimize=false>;}Attributes <bgcolor=0xFFFFFF>;
+		FSeek(ActorArrayOffset);
+        struct{Actor actor[ActorCount] <optimize=false>;}Actors <bgcolor=0xFFFFFF>;
 	}
 
 	if (EventCount)
@@ -41,17 +47,11 @@ typedef struct // EVFL
         Events events;
 	}
 
-	if (EventSectionCount)
+	if (EventInfoCount)
 	{
-		FSeek(EventSectionOffset);
-        EventSections eventSections;
+		FSeek(EventInfoOffset);
+        EventInfos eventInfos;
 	}
-
-    if(StringArrayOffset)
-    {
-        FSeek(blockOffset + StringArrayOffset);
-        Strings strings;
-    }
 
     FSeek(posM);
 

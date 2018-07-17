@@ -77,14 +77,14 @@ typedef struct //  EVENTS
 }
 }Events <bgcolor=0xFFDDEF>;
 
-typedef struct //   EVENTSECTIONS
+typedef struct //   EVENTINFOS
 {
     local uint m <hidden=true> = 0;
-    for(m = 0; m < EventSectionCount; m++ )
+    for(m = 0; m < EventInfoCount; m++ )
     {
-        EventSection eventSection;
+        EventInfo eventInfo;
     }
-}EventSections;
+}EventInfos;
 
 
 typedef struct //  EVENT
@@ -112,7 +112,7 @@ typedef struct //  EVENT
 
 	FSeek(pos);
 
-}EventSection <bgcolor=0xFDCDEF>;
+}EventInfo <bgcolor=0xFDCDEF>;
 
 typedef struct //  EVENT
 {
@@ -258,56 +258,56 @@ typedef struct //  EVENTS
     }
 }EventEntries <bgcolor=0xFDCDEF, fgcolor=0xDDDDDD, comment="The \"eventEntry\" structs each have the corresponding name given by \"eventEntryNames\".">;
 
-typedef struct // EFEVL Attributes/Actors
+typedef struct // Actor
 {
-	NameOffset AttributeName;
+	NameOffset ActorName;
 	NameOffset unkName;
 	NameOffset unkName;
-	uint64 DemoNameArrayOffset;
-	uint64 CheckNameArrayOffset;
-	uint64 AttributeDataOffset;
-	ushort DemoNameCount;	
-	ushort CheckNameCount;	
+	uint64 DemoAIActionArrayOffset;
+	uint64 AIClassNameArrayOffset;
+	uint64 ActorDataOffset;
+	ushort DemoAIActionCount;	
+	ushort AIClassNameCount;	
 	ushort Unk;	
 	ushort Unk;	
     local uint posM <hidden=true> = FTell();
 
 
-    if (DemoNameArrayOffset)
+    if (DemoAIActionArrayOffset)
     {
-         FSeek(DemoNameArrayOffset);
-         DemoNameArray demoName;
+         FSeek(DemoAIActionArrayOffset);
+         DemoAIActionArray demoAIActions;
     }
-    if (CheckNameArrayOffset)
+    if (AIClassNameArrayOffset)
     {
-         FSeek(CheckNameArrayOffset);
-         CheckNameArray checkName;
+         FSeek(AIClassNameArrayOffset);
+         AIClassNameArray AIClassNames;
     }
-    if (AttributeDataOffset)
+    if (ActorDataOffset)
     {
-        FSeek(AttributeDataOffset);
-        EventData attributeData;
+        FSeek(ActorDataOffset);
+        EventData actorData;
     }
 
     FSeek(posM);
 
-}Attribute;
+}Actor;
 
-typedef struct //  DemoNames
+typedef struct //  DemoAIActions
 {
     local int i <hidden=true> = 0;
-    for(i = 0; i < DemoNameCount; i++ ){
-    NameOffset demoName;
+    for(i = 0; i < DemoAIActionCount; i++ ){
+    NameOffset demoAIAction;
 }
-}DemoNameArray;
+}DemoAIActionArray;
 
-typedef struct //  CheckNames
+typedef struct //  AIClassNames
 {
     local int i <hidden=true> = 0;
-    for(i = 0; i < CheckNameCount; i++ ){
-    NameOffset demoName;
+    for(i = 0; i < AIClassNameCount; i++ ){
+    NameOffset AIClassName;
 }
-}CheckNameArray;
+}AIClassNameArray;
 
 typedef struct // EFEVL
 {

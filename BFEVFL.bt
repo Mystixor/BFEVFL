@@ -26,12 +26,12 @@ struct RELT; struct RELTSection; struct RELTEntry;
 
 // ---- Section Specific ----
 
-struct EVFL; struct Attribute; struct AttributeData;
-struct DemoNameArray; struct CheckNameArray;
+struct EVFL; struct Actor; struct AttributeData;
+struct DemoAIActionArray; struct AIClassNameArray;
 struct Events; struct Event; struct EventData;
-struct EventSection; struct EventSections; struct EventEntry; struct EventEntries;
+struct EventInfo; struct EventInfos; struct EventEntry; struct EventEntries;
 
-struct TLIN; struct SomeStruct1; struct SomeStruct3; struct SomeStruct4; struct Strings;
+struct TLIN; struct SomeStruct1; struct EventSection; struct SomeStruct4; struct Strings;
 
 // ==== Includes =======================================================================================================
 

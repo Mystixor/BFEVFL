@@ -15,14 +15,14 @@ typedef struct // TLIN
     ushort unk;
     ushort unk;
     ushort unk;
-    ushort AttributeCount;
+    ushort ActorCount;
     ushort EventCount; 
-	ushort SomeCount3;
+	ushort EventSectionCount;
     ushort unk;
     ushort unk;
     ushort SomeCount1;
     NameOffset nameOffset;
-	uint64 AttributeOffset;
+	uint64 ActorArrayOffset;
 	uint64 SomeOffset3;
 	uint64 SomeOffset5;
 	uint64 SomeOffset4;
@@ -38,23 +38,23 @@ typedef struct // TLIN
 		Dict EventEntrykDict(DT_NONE);
 	}
 
-	if (AttributeCount)
+	if (ActorCount)
 	{
-		FSeek(AttributeOffset);
-        struct{Attribute attribute[AttributeCount] <optimize=false>;}Attributes <bgcolor=0xFFFFFF>;
+		FSeek(ActorArrayOffset);
+        struct{Actor actor[ActorCount] <optimize=false>;}Actors <bgcolor=0xFFFFFF>;
 	}
 
-	if (SomeCount3)
+	if (EventSectionCount)
 	{
 		FSeek(SomeOffset3);
         struct
         {
             local uint j = 0;
-            for(j = 0; j < SomeCount3; j++)
+            for(j = 0; j < EventSectionCount; j++)
             {
-                SomeStruct3 someStruct3;
+                EventSection eventSection;
             }
-        } SomeStructs3;
+        } EventSections;
 	}
 
 	if (SomeOffset4)
@@ -63,7 +63,7 @@ typedef struct // TLIN
         struct
         {
             local uint k = 0;
-            for(k = 0; k < SomeCount3; k++)
+            for(k = 0; k < EventSectionCount; k++)
             {
                 SomeStruct4 someStruct4;
 	        }
@@ -108,9 +108,10 @@ typedef struct
 typedef struct
 {
     local uint pos <hidden=true> = 0;
-    float unknown;
-    float unknown;
-    uint unknown;
+    float start <comment="Starts at frame">;
+    float length <comment="Ends after frames">;
+    ushort unknown;
+    ushort unknown;
     uint unknown;
     uint64 EventDataOffset;
     pos = FTell();
@@ -120,7 +121,7 @@ typedef struct
         EventData eventData;
     }
     FSeek(pos);
-} SomeStruct3 <bgcolor=0xFFAAFF>;
+} EventSection <bgcolor=0xFFAAFF>;
 
 typedef struct
 {
