@@ -20,14 +20,14 @@ typedef struct // TLIN
 	ushort EventSectionCount;
     ushort unk;
     ushort unk;
-    ushort SomeCount1;
+    ushort CamAnimCount;
     NameOffset nameOffset;
 	uint64 ActorArrayOffset;
 	uint64 SomeOffset3;
 	uint64 SomeOffset5;
 	uint64 SomeOffset4;
     uint64 SubFileNameOffset;
-    uint64 SomeOffset1;
+    uint64 CamAnimsOffset;
     uint64 EventDataOffset;
 
     local uint posM <hidden=true> = FTell();
@@ -76,17 +76,17 @@ typedef struct // TLIN
         NameOffset SubFile;
     }
 
-    if (SomeCount1)
+    if (CamAnimCount)
     {
-        FSeek(SomeOffset1);
+        FSeek(CamAnimsOffset);
         struct
         {
             local uint i = 0;
-            for(i = 0; i < SomeCount1; i++)
+            for(i = 0; i < CamAnimCount; i++)
             {
-                SomeStruct1 someStruct1;
+                CamAnim camAnim;
             }
-        } SomeStructs1;
+        } CameraAnimations;
     }
 
     if (EventDataOffset)
@@ -99,19 +99,19 @@ typedef struct // TLIN
 
 typedef struct
 {
-    float unknown;
+    float start <comment="Starts at frame">;
     uint unknown;
-    NameOffset nameOffset;
+    NameOffset CamAnimName;
     uint64 unknown;
-} SomeStruct1 <bgcolor=0x55FFFF>;
+} CamAnim <bgcolor=0x55FFFF>;
 
 typedef struct
 {
     local uint pos <hidden=true> = 0;
     float start <comment="Starts at frame">;
     float length <comment="Ends after frames">;
-    ushort unknown;
-    ushort unknown;
+    ushort ActorIdx;
+    ushort DemoAIActionIdx;
     uint unknown;
     uint64 EventDataOffset;
     pos = FTell();

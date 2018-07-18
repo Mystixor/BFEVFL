@@ -31,7 +31,7 @@ struct DemoAIActionArray; struct AIClassNameArray;
 struct Events; struct Event; struct EventData;
 struct EventInfo; struct EventInfos; struct EventEntry; struct EventEntries;
 
-struct TLIN; struct SomeStruct1; struct EventSection; struct SomeStruct4; struct Strings;
+struct TLIN; struct CamAnim; struct EventSection; struct SomeStruct4; struct Strings;
 
 // ==== Includes =======================================================================================================
 
