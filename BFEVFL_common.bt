@@ -77,14 +77,14 @@ typedef struct //  EVENTS
 }
 }Events <bgcolor=0xFFDDEF>;
 
-typedef struct //   EVENTINFOS
+typedef struct //   ENTRYPOINTINFOS
 {
     local uint m <hidden=true> = 0;
-    for(m = 0; m < EventInfoCount; m++ )
+    for(m = 0; m < EntryPointInfoCount; m++ )
     {
-        EventInfo eventInfo;
+        EntryPointInfo entryPointInfo;
     }
-}EventInfos;
+}EntryPointInfos;
 
 
 typedef struct //  EVENT
@@ -112,7 +112,7 @@ typedef struct //  EVENT
 
 	FSeek(pos);
 
-}EventInfo <bgcolor=0xFDCDEF>;
+}EntryPointInfo <bgcolor=0xFDCDEF>;
 
 typedef struct //  EVENT
 {
@@ -126,7 +126,7 @@ typedef struct //  EVENT
 	uint64 UnkOffset;	
     NameOffset flag;
     local uint pos <hidden=true> = FTell();
-    if(Flag)
+    if(UnkOffset)
 	{
 		FSeek(UnkOffset);
 
@@ -150,6 +150,14 @@ typedef struct //  EVENT
 	if (eventDataOffset)
 	{
 		FSeek(eventDataOffset);
+        if(Flag == 2)
+        {
+            local int r <hidden=true> = 0;
+            for(r = 0; r < Flag; r++ )
+            {
+                uint unknown;
+            }
+        }
         EventData eventData;
 	}
 
@@ -161,18 +169,19 @@ typedef struct //  EVENT
 typedef struct //  EVENT
 {
     //  Mystixor's theory
-    ushort flag; // '0x05' for string
+    ushort flag;
     ushort count;
     uint unknown1;
     uint unknown2;
     uint unknown3;
 
     local uint p <hidden=true> = 0;
+    local uint pos <hidden=true> = 0;
     for(p = 0; p < count; p++)
     {
-        if(flag == 0 || flag == 5)      //  string
+        if(flag == 0 || flag == 5 || flag == 12)      //  string
         {
-            local uint pos <hidden=true> = FTell();                         //
+            pos = FTell();                         //
             uint64 entryNameOffset <hidden=true>;                           //
             FSeek(entryNameOffset);                                         //  Completely unnecessary, only
             ushort entryNameLength <hidden=true>;                           //  used to properly align
@@ -201,7 +210,7 @@ typedef struct //  EVENT
         }
     }
 
-    if(flag != 0 && flag != 5){uint unknown4;}
+    if(flag != 0 && flag != 5 && flag != 12){uint unknown4;}
     
     FAlign(8);
     

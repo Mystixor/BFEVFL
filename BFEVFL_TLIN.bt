@@ -17,13 +17,13 @@ typedef struct // TLIN
     ushort unk;
     ushort ActorCount;
     ushort EventCount; 
-	ushort EventSectionCount;
+	ushort SceneCount;
     ushort unk;
     ushort unk;
     ushort CamAnimCount;
     NameOffset nameOffset;
-	uint64 ActorArrayOffset;
-	uint64 SomeOffset3;
+	uint64 ActorOffset;
+	uint64 SceneOffset;
 	uint64 SomeOffset5;
 	uint64 SomeOffset4;
     uint64 SubFileNameOffset;
@@ -40,21 +40,21 @@ typedef struct // TLIN
 
 	if (ActorCount)
 	{
-		FSeek(ActorArrayOffset);
+		FSeek(ActorOffset);
         struct{Actor actor[ActorCount] <optimize=false>;}Actors <bgcolor=0xFFFFFF>;
 	}
 
-	if (EventSectionCount)
+	if (SceneCount)
 	{
-		FSeek(SomeOffset3);
+		FSeek(SceneOffset);
         struct
         {
             local uint j = 0;
-            for(j = 0; j < EventSectionCount; j++)
+            for(j = 0; j < SceneCount; j++)
             {
-                EventSection eventSection;
+                Scene scene;
             }
-        } EventSections;
+        } Scenes;
 	}
 
 	if (SomeOffset4)
@@ -63,7 +63,7 @@ typedef struct // TLIN
         struct
         {
             local uint k = 0;
-            for(k = 0; k < EventSectionCount; k++)
+            for(k = 0; k < SceneCount; k++)
             {
                 SomeStruct4 someStruct4;
 	        }
@@ -121,7 +121,7 @@ typedef struct
         EventData eventData;
     }
     FSeek(pos);
-} EventSection <bgcolor=0xFFAAFF>;
+} Scene <bgcolor=0xFFAAFF>;
 
 typedef struct
 {

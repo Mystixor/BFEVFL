@@ -17,23 +17,17 @@ typedef struct // EVFL
     ushort unk;
     ushort unk;
     ushort EventCount; 
-	ushort EventInfoCount;
+	ushort EntryPointInfoCount;
     ushort unk;
     ushort unk;
     ushort unk;
     NameOffset nameOffset;
 	uint64 ActorArrayOffset;
 	uint64 EventArrayOffset;
-	uint64 EventDictOffset;
-	uint64 EventInfoOffset;
+	uint64 EntryPointDictOffset;
+	uint64 EntryPointInfoOffset;
 
     local uint posM <hidden=true> = FTell();
-
-	if (EventDictOffset)
-	{
-		FSeek(EventDictOffset);
-		Dict EventEntrykDict(DT_NONE);
-	}
 
 	if (ActorCount)
 	{
@@ -47,10 +41,16 @@ typedef struct // EVFL
         Events events;
 	}
 
-	if (EventInfoCount)
+	if (EntryPointDictOffset)
 	{
-		FSeek(EventInfoOffset);
-        EventInfos eventInfos;
+		FSeek(EntryPointDictOffset);
+		Dict EntryPoints(DT_NONE);
+	}
+
+	if (EntryPointInfoCount)
+	{
+		FSeek(EntryPointInfoOffset);
+        EntryPointInfos entryPointInfos;
 	}
 
     FSeek(posM);
