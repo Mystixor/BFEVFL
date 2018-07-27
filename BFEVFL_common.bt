@@ -118,12 +118,19 @@ typedef struct //  EVENT
 {
 	NameOffset EventName;
     ushort Flag;
-    if(Flag == 1)   {ushort Count;}
-    else            {ushort Unk0;}
+    if(Flag == 1)       {ushort count;}
+    else if(Flag == 2)  {ushort count; ushort NextEventIdx;}
+    else                {ushort NextEventIdx;}
     ushort Unk1;
-    ushort Unk2;
-	uint64 eventDataOffset;	
-	uint64 UnkOffset;	
+    if(Flag != 2)       {ushort Unk2;}
+	uint64 eventDataOffset;
+    if(Flag != 4)
+	    uint64 UnkOffset;	
+    else
+    {
+        NameOffset unknown;
+        local uint UnkOffset <hidden=true> = 0;
+    }
     NameOffset flag;
     local uint pos <hidden=true> = FTell();
     if(UnkOffset)
@@ -135,32 +142,37 @@ typedef struct //  EVENT
             if(Flag == 1)
             {
                 local int o <hidden=true> = 0;
-                for(o = 0; o < Count; o++ )
+                for(o = 0; o < count; o++ )
                 {
                     struct
                     {
-                    uint value;
-                    uint value;
+                    uint EventDecision0;
+                    uint EventDecision1;
                     }values;
                 }
             }
         }Something <bgcolor=0xFFFFFF>;
 	}
 
-	if (eventDataOffset)
+	if (eventDataOffset && Flag != 2)
 	{
 		FSeek(eventDataOffset);
-        if(Flag == 2)
+        /*if(Flag == 2)
         {
             local int r <hidden=true> = 0;
             for(r = 0; r < Flag; r++ )
             {
                 uint unknown;
             }
-        }
+        }*/
         EventData eventData;
 	}
-
+    else if (eventDataOffset && Flag == 2)
+    {
+        FSeek(eventDataOffset);
+        ushort unknown[count];
+        FAlign(8);
+    }
 	FSeek(pos);
 
 
@@ -220,15 +232,20 @@ typedef struct //  EVENT
 {
     ushort Unk;
 
-    if(Unk == 29)
+    if(Unk == 41 || Unk == 71 || Unk == 144)
+    {
+        local uint n <hidden=true> = FTell();
+        FSeek(n + 8);
+    }
+    else if(Unk == 29)
     {
         local uint n <hidden=true> = FTell();
         FSeek(n + 16);
     }
-    else if(Unk == 41)
+    else if(Unk == 74)
     {
         local uint n <hidden=true> = FTell();
-        FSeek(n + 8);
+        FSeek(n + 24);
     }
 
     ushort EventEntryCount;	
